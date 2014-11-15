@@ -1,0 +1,22 @@
+{
+  "name": "example",
+  "version": "0.0.0",
+  "homepage": "",
+  "authors": [
+    "You <email@gmail.com>"
+  ],
+  "description": "My first cycle website",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "almond": "~0.3.0",
+    "phaser": "~2.1.3"
+  }
+}

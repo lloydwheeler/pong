@@ -1,0 +1,24 @@
+//- Include mixins
+//- include ../mixins/_all
+
+doctype
+html
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    title="Brian the Robot"
+    meta(name='description', content='')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+
+    block css
+      link(rel='stylesheet', href='assets/css/style.css')
+
+  - var bodyClasses = [];
+  block beforeBody
+
+  body(class=bodyClasses)
+    block content
+
+    block js
+      script(src='assets/scripts/phaser.min.js')
+      script(data-main='main', src='assets/js/app.js')
