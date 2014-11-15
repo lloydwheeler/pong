@@ -431,39 +431,41 @@ var requirejs, require, define;
 define("almond/almond", function(){});
 
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   define("game/objects/paddle", [], function() {
     var Paddle;
-    return Paddle = (function() {
-      Paddle.currentPosition = 0;
+    return Paddle = (function(_super) {
+      __extends(Paddle, _super);
 
       Paddle.preload = function(state) {
-        return state.load.image('paddle', 'assets/img/player.png');
+        return state.load.image('paddle', 'assets/img/paddle.png');
       };
 
       function Paddle(game, x, y) {
         this.game = game;
-        this.currentPosition = y;
-        this.paddle = this.game.add.sprite(x, y, 'paddle');
-        this.game.physics.enable(this.paddle, Phaser.Physics.ARCADE);
-        this.paddle.anchor.setTo(.5, .5);
-        this.paddle.body.collideWorldBounds = true;
-        this.paddle.body.bounce.setTo(1, 1);
-        this.paddle.body.immovable = true;
+        Paddle.__super__.constructor.call(this, this.game, x, y, 'paddle');
+        this.game.physics.arcade.enable(this);
+        this.anchor.setTo(.5, .5);
+        this.body.collideWorldBounds = true;
+        this.body.bounce.setTo(1, 1);
+        this.body.immovable = true;
       }
 
       Paddle.prototype.updatePosition = function() {
         if (this.game.input.y < 100) {
-          return this.paddle.y = 100;
+          return this.y = 100;
         } else if (this.game.input.y > 500) {
-          return this.paddle.y = 500;
+          return this.y = 500;
         } else {
-          return this.paddle.y = this.game.input.y;
+          return this.y = this.game.input.y;
         }
       };
 
       return Paddle;
 
-    })();
+    })(Phaser.Sprite);
   });
 
 }).call(this);
@@ -472,42 +474,9 @@ define("almond/almond", function(){});
   define("game/settings", [], function() {
     return {
       aiSpeed: 1,
-      ballSpeed: 300
+      ballSpeed: 300,
+      velocityIncrease: 50
     };
-  });
-
-}).call(this);
-
-(function() {
-  define("game/objects/ball", ["game/settings"], function(Settings) {
-    var Ball;
-    return Ball = (function() {
-      Ball.isMoving = false;
-
-      Ball.preload = function(state) {
-        return state.load.image('ball', 'assets/img/ball.png');
-      };
-
-      function Ball(game, x, y) {
-        this.ball = game.add.sprite(x, y, 'ball');
-        game.physics.enable(this.ball, Phaser.Physics.ARCADE);
-        this.ball.anchor.setTo(.5, .5);
-        this.ball.body.collideWorldBounds = true;
-        this.ball.body.bounce.setTo(1, 1);
-      }
-
-      Ball.prototype.releaseBall = function() {
-        console.log("releasing ball");
-        if (!this.isMoving) {
-          this.ball.body.velocity.x = Settings.ballSpeed;
-          this.ball.body.velocity.y = -Settings.ballSpeed;
-          return this.isMoving = true;
-        }
-      };
-
-      return Ball;
-
-    })();
   });
 
 }).call(this);
@@ -516,36 +485,104 @@ define("almond/almond", function(){});
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define("states/boot", ["game/objects/paddle", "game/objects/ball"], function(Paddle, Ball) {
-    var Boot;
-    return Boot = (function(_super) {
-      __extends(Boot, _super);
+  define("game/objects/ball", ["game/settings"], function(Settings) {
+    var Ball;
+    return Ball = (function(_super) {
+      __extends(Ball, _super);
 
-      function Boot() {
-        return Boot.__super__.constructor.apply(this, arguments);
+      Ball.isMoving = false;
+
+      Ball.preload = function(state) {
+        return state.load.image('ball', 'assets/img/ball.png');
+      };
+
+      function Ball(game, x, y) {
+        this.game = game;
+        Ball.__super__.constructor.call(this, this.game, x, y, 'ball');
+        this.game.physics.arcade.enable(this);
+        this.anchor.setTo(.5, .5);
+        this.body.collideWorldBounds = true;
+        this.body.bounce.setTo(1, 1);
       }
 
-      Boot.prototype.preload = function() {
+      Ball.prototype.releaseBall = function() {
+        if (!this.isMoving) {
+          this.body.velocity.x = Settings.ballSpeed;
+          this.body.velocity.y = -Settings.ballSpeed;
+          return this.isMoving = true;
+        }
+      };
+
+      Ball.prototype.checkGoal = function() {
+        if (this.x < 15) {
+          console.log("goal!");
+          this.body.velocity.x = Settings.ballSpeed;
+          this.body.velocity.y = -Settings.ballSpeed;
+          return this.resetPosition();
+        }
+      };
+
+      Ball.prototype.resetPosition = function() {
+        this.x = this.game.world.centerX;
+        return this.y = this.game.world.centerY;
+      };
+
+      Ball.prototype.increaseVelocity = function() {
+        this.body.velocity.y += Settings.velocityIncrease;
+        return this.body.velocity.x += Settings.velocityIncrease;
+      };
+
+      return Ball;
+
+    })(Phaser.Sprite);
+  });
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define("states/main", ["game/objects/paddle", "game/objects/ball"], function(Paddle, Ball) {
+    var Main;
+    return Main = (function(_super) {
+      var ball;
+
+      __extends(Main, _super);
+
+      function Main() {
+        return Main.__super__.constructor.apply(this, arguments);
+      }
+
+      ball = "";
+
+      Main.prototype.preload = function() {
         Paddle.preload(this);
         return Ball.preload(this);
       };
 
-      Boot.prototype.create = function() {
+      Main.prototype.create = function() {
         this.player = new Paddle(this.game, 20, game.world.centerY - 100);
+        this.world.add(this.player);
         this.ai = new Paddle(this.game, game.width - 20, game.world.centerY - 100);
-        this.ball = new Ball(this.game, game.world.centerX, game.world.centerY);
-        return this.ball.releaseBall();
+        this.world.add(this.ai);
+        ball = new Ball(this.game, game.world.centerX, game.world.centerY);
+        this.world.add(ball);
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        return ball.releaseBall();
       };
 
-      Boot.prototype.update = function() {
-        return this.player.updatePosition();
+      Main.prototype.update = function() {
+        this.player.updatePosition();
+        ball.checkGoal();
+        return this.game.physics.arcade.collide(ball, this.player, this.ballCollision);
       };
 
-      Boot.prototype.ballCollision = function() {
-        return console.log("collision");
+      Main.prototype.ballCollision = function() {
+        return ball.increaseVelocity();
       };
 
-      return Boot;
+      return Main;
 
     })(Phaser.State);
   });
@@ -556,15 +593,15 @@ define("almond/almond", function(){});
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define("game", ["states/boot"], function(Boot) {
+  define("game", ["states/main"], function(Main) {
     var Game;
     return Game = (function(_super) {
       __extends(Game, _super);
 
       function Game() {
         Game.__super__.constructor.call(this, 800, 600, Phaser.AUTO, '', null);
-        this.state.add('Boot', Boot);
-        this.state.start('Boot');
+        this.state.add('Main', Main);
+        this.state.start('Main');
       }
 
       return Game;

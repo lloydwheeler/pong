@@ -1,9 +1,9 @@
-define "game", ["states/boot"], (Boot) ->
+define "game", ["states/main"], (Main) ->
 	
 	class Game extends Phaser.Game
 
 		constructor: ->
 			super 800, 600, Phaser.AUTO, '', null
 
-			@state.add 'Boot', Boot
-			@state.start 'Boot'
+			@state.add 'Main', Main
+			@state.start 'Main'

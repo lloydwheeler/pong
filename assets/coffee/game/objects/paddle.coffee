@@ -1,15 +1,14 @@
 define "game/objects/paddle", [], () ->
 
 	# Creates an instance of a paddle object
-	class Paddle 
+	class Paddle extends Phaser.Sprite
 
-		@currentPosition = 0
 
 		# Preloads the paddle sprite
 		#
 		# @param {Object} state The current game state
 		@preload: (state) ->
-			state.load.image 'paddle', 'assets/img/player.png'
+			state.load.image 'paddle', 'assets/img/paddle.png'
 
 
 		# Initialise a paddle
@@ -20,21 +19,25 @@ define "game/objects/paddle", [], () ->
 		constructor: (game, x, y) ->
 
 			@game = game
-			@currentPosition = y
 
-			@paddle = @game.add.sprite(x, y, 'paddle')
-			@game.physics.enable(@paddle, Phaser.Physics.ARCADE)
-			@paddle.anchor.setTo(.5,.5)
-			@paddle.body.collideWorldBounds = true
-			@paddle.body.bounce.setTo(1,1)
-			@paddle.body.immovable = true
+			super(@game, x, y, 'paddle')
+			
+
+
+
+			@game.physics.arcade.enable(this)
+			this.anchor.setTo(.5,.5)
+			this.body.collideWorldBounds = true
+			this.body.bounce.setTo(1,1)
+			this.body.immovable = true
 
 
 		# Update the paddle position
 		updatePosition: ->
+
 			if @game.input.y < 100
-				@paddle.y = 100
+				this.y = 100
 			else if @game.input.y > 500
-				@paddle.y = 500
+				this.y = 500
 			else
-				@paddle.y = @game.input.y
+				this.y = @game.input.y
